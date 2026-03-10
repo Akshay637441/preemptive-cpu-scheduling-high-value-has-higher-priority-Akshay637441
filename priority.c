@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 
-#define MAX 10
+#define MAX 20
 
 typedef struct {
     int pid;
@@ -10,66 +9,84 @@ typedef struct {
     int priority;
     int remaining;
     int completion;
-    int waiting;
     int turnaround;
+    int waiting;
 } Process;
 
-int get_highest(Process p[], int n, int t) {
-    int best = -1;
+int highest_priority(Process p[], int n, int time) {
+    int index = -1;
+
     for (int i = 0; i < n; i++) {
-        if (p[i].arrival <= t && p[i].remaining > 0) {
-            if (best == -1 || p[i].priority > p[best].priority)
-                best = i;
+        if (p[i].arrival <= time && p[i].remaining > 0) {
+            if (index == -1 || p[i].priority > p[index].priority) {
+                index = i;
+            }
         }
     }
-    return best;
+
+    return index;
 }
 
-int main(void) {
+int main() {
     int n;
     scanf("%d", &n);
 
     Process p[MAX];
+
     for (int i = 0; i < n; i++) {
+        char name[5];
+        scanf("%s %d %d %d", name, &p[i].arrival, &p[i].burst, &p[i].priority);
+
         p[i].pid = i + 1;
-        scanf("%d %d %d", &p[i].arrival, &p[i].burst, &p[i].priority);
         p[i].remaining = p[i].burst;
-        p[i].completion = p[i].waiting = p[i].turnaround = 0;
     }
 
-    int done = 0, t = 0;
-    while (done < n) {
-        int idx = get_highest(p, n, t);
+    int completed = 0;
+    int time = 0;
+
+    while (completed < n) {
+
+        int idx = highest_priority(p, n, time);
+
         if (idx == -1) {
-            /* find next arrival */
-            int next = -1;
-            for (int i = 0; i < n; i++)
-                if (p[i].remaining > 0 && (next == -1 || p[i].arrival < next))
-                    next = p[i].arrival;
-            t = next;
+            time++;
             continue;
         }
+
         p[idx].remaining--;
-        t++;
+        time++;
+
         if (p[idx].remaining == 0) {
-            done++;
-            p[idx].completion = t;
-            p[idx].turnaround = t - p[idx].arrival;
-            p[idx].waiting    = p[idx].turnaround - p[idx].burst;
+            completed++;
+
+            p[idx].completion = time;
+            p[idx].turnaround = p[idx].completion - p[idx].arrival;
+            p[idx].waiting = p[idx].turnaround - p[idx].burst;
         }
     }
 
-    printf("PID\tAT\tBT\tPR\tCT\tTAT\tWT\n");
-    double tot_tat = 0, tot_wt = 0;
+    printf("PID AT BT PR CT TAT WT\n");
+
+    float total_tat = 0;
+    float total_wt = 0;
+
     for (int i = 0; i < n; i++) {
-        printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-               p[i].pid, p[i].arrival, p[i].burst, p[i].priority,
-               p[i].completion, p[i].turnaround, p[i].waiting);
-        tot_tat += p[i].turnaround;
-        tot_wt  += p[i].waiting;
+
+        printf("P%d %d %d %d %d %d %d\n",
+               p[i].pid,
+               p[i].arrival,
+               p[i].burst,
+               p[i].priority,
+               p[i].completion,
+               p[i].turnaround,
+               p[i].waiting);
+
+        total_tat += p[i].turnaround;
+        total_wt += p[i].waiting;
     }
-    printf("Average TAT: %.2f\n", tot_tat / n);
-    printf("Average WT: %.2f\n",  tot_wt  / n);
+
+    printf("Average TAT: %.2f\n", total_tat / n);
+    printf("Average WT: %.2f\n", total_wt / n);
 
     return 0;
 }
