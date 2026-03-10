@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define MAX 50
+#define MAX 10
 
 typedef struct {
     int pid;
