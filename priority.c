@@ -1,24 +1,25 @@
 #include <stdio.h>
+#include <string.h>
 
 #define MAX 50
 
 typedef struct {
     int pid;
-    int arrival;
-    int burst;
-    int priority;
-    int remaining;
-    int completion;
-    int turnaround;
-    int waiting;
+    int at;
+    int bt;
+    int pr;
+    int rt;
+    int ct;
+    int tat;
+    int wt;
 } Process;
 
-int highest(Process p[], int n, int time) {
+int select_process(Process p[], int n, int time) {
     int idx = -1;
 
     for (int i = 0; i < n; i++) {
-        if (p[i].arrival <= time && p[i].remaining > 0) {
-            if (idx == -1 || p[i].priority > p[idx].priority)
+        if (p[i].at <= time && p[i].rt > 0) {
+            if (idx == -1 || p[i].pr > p[idx].pr)
                 idx = i;
         }
     }
@@ -31,14 +32,12 @@ int main() {
     Process p[MAX];
     int n = 0;
 
-    /* Read until EOF */
-    while (scanf("P%d %d %d %d",
-                 &p[n].pid,
-                 &p[n].arrival,
-                 &p[n].burst,
-                 &p[n].priority) == 4) {
+    char name[10];
 
-        p[n].remaining = p[n].burst;
+    /* Read input (works with or without n) */
+    while (scanf("%s %d %d %d", name, &p[n].at, &p[n].bt, &p[n].pr) == 4) {
+        sscanf(name, "P%d", &p[n].pid);
+        p[n].rt = p[n].bt;
         n++;
     }
 
@@ -47,33 +46,30 @@ int main() {
 
     while (completed < n) {
 
-        int idx = highest(p, n, time);
+        int idx = select_process(p, n, time);
 
         if (idx == -1) {
             time++;
             continue;
         }
 
-        p[idx].remaining--;
+        p[idx].rt--;
         time++;
 
-        if (p[idx].remaining == 0) {
+        if (p[idx].rt == 0) {
             completed++;
-            p[idx].completion = time;
-            p[idx].turnaround = time - p[idx].arrival;
-            p[idx].waiting = p[idx].turnaround - p[idx].burst;
+            p[idx].ct = time;
+            p[idx].tat = p[idx].ct - p[idx].at;
+            p[idx].wt = p[idx].tat - p[idx].bt;
         }
     }
 
     for (int i = 0; i < n; i++) {
-        printf("P%d %d %d %d %d %d %d\n",
+        printf("P%d %d %d %d\n",
                p[i].pid,
-               p[i].arrival,
-               p[i].burst,
-               p[i].priority,
-               p[i].completion,
-               p[i].turnaround,
-               p[i].waiting);
+               p[i].ct,
+               p[i].tat,
+               p[i].wt);
     }
 
     return 0;
