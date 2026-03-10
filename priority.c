@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 #define MAX 50
 
@@ -30,19 +29,18 @@ int select_process(Process p[], int n, int time) {
 int main() {
 
     Process p[MAX];
-    int n = 0;
+    int n;
 
-    char name[10];
+    if (scanf("%d", &n) != 1) return 0;
 
-    /* Read input (works with or without n) */
-    while (scanf("%s %d %d %d", name, &p[n].at, &p[n].bt, &p[n].pr) == 4) {
-        sscanf(name, "P%d", &p[n].pid);
-        p[n].rt = p[n].bt;
-        n++;
+    for (int i = 0; i < n; i++) {
+        char name[10];
+        scanf("%s %d %d %d", name, &p[i].at, &p[i].bt, &p[i].pr);
+        sscanf(name, "P%d", &p[i].pid);
+        p[i].rt = p[i].bt;
     }
 
-    int completed = 0;
-    int time = 0;
+    int time = 0, completed = 0;
 
     while (completed < n) {
 
@@ -64,13 +62,22 @@ int main() {
         }
     }
 
+    double avg_wt = 0, avg_tat = 0;
+
+    printf("Waiting Time:\n");
     for (int i = 0; i < n; i++) {
-        printf("P%d %d %d %d\n",
-               p[i].pid,
-               p[i].ct,
-               p[i].tat,
-               p[i].wt);
+        printf("P%d %d\n", p[i].pid, p[i].wt);
+        avg_wt += p[i].wt;
     }
+
+    printf("Turnaround Time:\n");
+    for (int i = 0; i < n; i++) {
+        printf("P%d %d\n", p[i].pid, p[i].tat);
+        avg_tat += p[i].tat;
+    }
+
+    printf("Average Waiting Time: %.2f\n", avg_wt / n);
+    printf("Average Turnaround Time: %.2f\n", avg_tat / n);
 
     return 0;
 }
